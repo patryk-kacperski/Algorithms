@@ -27,9 +27,59 @@ private:
 		}
 	}
 	
-	// void *strassenMul(Matrix const &A, int firstRowLow, int firstRowHigh, int firstColumnLow, int firstColumnHigh, int secondRowLow, int secondRowHigh, int secondColumnLow, int secondColumnHigh, Matrix &res) {
+	void strassenMul(Matrix &A, int rLow, int rHigh, int cLow, int cHigh, int scLow, int scHigh, Matrix &res, Matrix &M1, Matrix &M2, Matrix &M3, Matrix &M4, Matrix &M5,
+		Matrix &M6, Matrix &M7, Matrix &M1T1, Matrix &M1T2, Matrix &M2T, Matrix &M3T, Matrix &M4T, Matrix &M5T, Matrix &M6T1, Matrix &M6T2, Matrix &M7T1, Matrix &M7T2) {
+			int a1rLow = rLow, a1rHigh = (rHigh - rLow) / 2, a2rLow = (rHigh - rLow) / 2 + 1, a2rHigh = rHigh;
+			int a1cLow = scLow, a1cHigh = (scHigh - scLow) / 2, a2cLow = (scHigh - scLow) / 2 + 1, a2cHigh = scHigh;
+			int b1rLow = a1cLow, b1rHigh = a1cHigh, b2rLow = a2cLow, b2rHigh = a2cHigh;
+			int b1cLow = cLow, b1cHigh = (cHigh - cLow) / 2, b2cLow = (cHigh - cLow) / 2 + 1, b2cHigh = cHigh;
+		}
+	
+	void strassenMul(Matrix &A, int rLow, int rHigh, int cLow, int cHigh, int scLow, int scHigh, Matrix &res) const {
+		if (rHigh - rLow <= 1 || cHigh - cLow <= 1) {
+			classicMul(A, rLow, rHigh, cLow, cHigh, scLow, scHigh, res);
+			return;
+		}
 		
-	// }
+		int tempRows = (rHigh - rLow) / 2;
+		int tempColumns = (cHigh - cLow) / 2;
+		Matrix<Type> *M1 = new Matrix(tempRows, tempColumns);
+		Matrix<Type> *M2 = new Matrix(tempRows, tempColumns);
+		Matrix<Type> *M3 = new Matrix(tempRows, tempColumns);
+		Matrix<Type> *M4 = new Matrix(tempRows, tempColumns);
+		Matrix<Type> *M5 = new Matrix(tempRows, tempColumns);
+		Matrix<Type> *M6 = new Matrix(tempRows, tempColumns);
+		Matrix<Type> *M7 = new Matrix(tempRows, tempColumns);
+		Matrix<Type> *M1T1 = new Matrix(tempRows, tempColumns);
+		Matrix<Type> *M1T2 = new Matrix(tempRows, tempColumns);
+		Matrix<Type> *M2T = new Matrix(tempRows, tempColumns);
+		Matrix<Type> *M3T = new Matrix(tempRows, tempColumns);
+		Matrix<Type> *M4T = new Matrix(tempRows, tempColumns);
+		Matrix<Type> *M5T = new Matrix(tempRows, tempColumns);
+		Matrix<Type> *M6T1 = new Matrix(tempRows, tempColumns);
+		Matrix<Type> *M6T2 = new Matrix(tempRows, tempColumns);
+		Matrix<Type> *M7T1 = new Matrix(tempRows, tempColumns);
+		Matrix<Type> *M7T2 = new Matrix(tempRows, tempColumns);
+		
+		strassenMul(A, rLow, rHigh, cLow, cHigh, scLow, scHigh, *M1, *M2, *M3, *M4, *M5, *M6, *M7, *M1T1, *M1T2, *M2T, *M3T, *M4T, *M5T, *M6T1, *M6T2, *M7T1, *M7T2);
+		
+		delete M1;
+		delete M2;
+		delete M3;
+		delete M4;
+		delete M5;
+		delete M6;
+		delete M7;
+		delete M1T1;
+		delete M1T2;
+		delete M3T;
+		delete M4T;
+		delete M5T;
+		delete M6T1;
+		delete M6T2;
+		delete M7T1;
+		delete M7T2;
+	}
 	
 	Matrix *strassenMul(Matrix const &A) const {
 		if (rows <= 2 || columns <= 2 || A.rows <= 2 || A.columns <= 2) {
