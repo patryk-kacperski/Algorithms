@@ -9,25 +9,35 @@ private:
 	int columns;
 	std::vector<std::vector<Type> > data;
 	
-	Matrix *classicMul(Matrix &A) const {
-		Matrix *res = new Matrix(rows, A.columns);
-		for (int i = 0; i < rows; ++i) {
-			for (int j = 0; j < A.columns; ++j) {
-				for (int k = 0; k < A.columns; ++k) {
-					(*res)[i][j] += (data[i][k] * A[k][j]);
+	void add(Matrix &A, int rLow, int rHigh, int cLow, int cHigh, Matrix &res) const {
+		for (int i = rLow; i <= rHigh; ++i) {
+			for (int j = cLow; j <= cHigh; ++j) {
+				res[i][j] += data[i][j] + A[i][j];
+			}
+		}
+	}
+	
+	void classicMul(Matrix &A, int rLow, int rHigh, int cLow, int cHigh, int scLow, int scHigh, Matrix &res) const {
+		for (int i = rLow; i <= rHigh; ++i) {
+			for (int j = cLow; j <= cHigh; ++j) {
+				for (int k = scLow; k <= scHigh; ++k) {
+					res[i][j] += data[i][k] * A[k][j];
 				}
 			}
 		}
-		return res;
 	}
+	
+	// void *strassenMul(Matrix const &A, int firstRowLow, int firstRowHigh, int firstColumnLow, int firstColumnHigh, int secondRowLow, int secondRowHigh, int secondColumnLow, int secondColumnHigh, Matrix &res) {
+		
+	// }
 	
 	Matrix *strassenMul(Matrix const &A) const {
 		if (rows <= 2 || columns <= 2 || A.rows <= 2 || A.columns <= 2) {
 			return classicMul(A);
 		}
 		Matrix *mat1 = NULL, *mat2 = NULL;
-		mat1 = (rows & 1 || columns & 1) ? this->expanded() : this;
-		mat2 = (A.rows & 1 || A.columns & 1) ? A.expanded() : *A;
+		// mat1 = (rows & 1 || columns & 1) ? this->expanded() : this;
+		// mat2 = (A.rows & 1 || A.columns & 1) ? A.expanded() : *A;
 	}
 	
 	Matrix *coppersmithWinogradMul(Matrix const &A) const {
@@ -97,11 +107,8 @@ public:
 			throw std::invalid_argument("Invalid matrix passed as an addition argument");
 		}
 		Matrix<Type> *res = new Matrix(rows, columns);
-		for (int i = 0; i < rows; ++i) {
-			for (int j = 0; j < columns; ++j) {
-				(*res)[i][j] = data[i][j] + A[i][j];
-			}
-		}
+		int rLow = 0, rHigh = rows - 1, cLow = 0, cHigh = columns - 1; 
+		add(A, rLow, rHigh, cLow, cHigh, *res);
 		return res;
 	}
 	
@@ -109,7 +116,9 @@ public:
 		if (this->columns != A.rows) {
 			throw std::invalid_argument("Invalid matrix passed as a multiplication argument");
 		}
-		Matrix *res = classicMul(A);
+		Matrix *res = new Matrix(rows, A.columns);
+		int rLow = 0, rHigh = rows - 1, cLow = 0, cHigh = A.columns - 1, scLow = 0, scHigh = columns - 1;
+		classicMul(A, rLow, rHigh, cLow, cHigh, scLow, scHigh, *res);
 		return res;
 	}
 };
