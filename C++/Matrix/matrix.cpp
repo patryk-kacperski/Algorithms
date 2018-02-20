@@ -9,6 +9,14 @@ private:
 	int columns;
 	std::vector<std::vector<Type> > data;
 	
+	void add(Matrix &A, int frLow, int frHigh, int fcLow, int fcHigh, int srLow, int srHigh, int scLow, int scHigh, int trLow, int trHigh, int tcLow, int tcHigh, Matrix &res) {
+		for (int fi = frLow, si = srLow, ti = trLow; fi <= frHigh; ++fi, ++si, ++ti) {
+			for (int fj = fcLow, sj = scLow, tj = tcLow; fj <= fcHigh; ++fj, ++sj, ++tj) {
+				res[ti][tj] += data[fi][fj] + A[si][sj];
+			}
+		}
+	}
+	
 	void add(Matrix &A, int rLow, int rHigh, int cLow, int cHigh, Matrix &res) const {
 		for (int i = rLow; i <= rHigh; ++i) {
 			for (int j = cLow; j <= cHigh; ++j) {
@@ -26,14 +34,6 @@ private:
 			}
 		}
 	}
-	
-	void strassenMul(Matrix &A, int rLow, int rHigh, int cLow, int cHigh, int scLow, int scHigh, Matrix &res, Matrix &M1, Matrix &M2, Matrix &M3, Matrix &M4, Matrix &M5,
-		Matrix &M6, Matrix &M7, Matrix &M1T1, Matrix &M1T2, Matrix &M2T, Matrix &M3T, Matrix &M4T, Matrix &M5T, Matrix &M6T1, Matrix &M6T2, Matrix &M7T1, Matrix &M7T2) {
-			int a1rLow = rLow, a1rHigh = (rHigh - rLow) / 2, a2rLow = (rHigh - rLow) / 2 + 1, a2rHigh = rHigh;
-			int a1cLow = scLow, a1cHigh = (scHigh - scLow) / 2, a2cLow = (scHigh - scLow) / 2 + 1, a2cHigh = scHigh;
-			int b1rLow = a1cLow, b1rHigh = a1cHigh, b2rLow = a2cLow, b2rHigh = a2cHigh;
-			int b1cLow = cLow, b1cHigh = (cHigh - cLow) / 2, b2cLow = (cHigh - cLow) / 2 + 1, b2cHigh = cHigh;
-		}
 	
 	void strassenMul(Matrix &A, int rLow, int rHigh, int cLow, int cHigh, int scLow, int scHigh, Matrix &res) const {
 		if (rHigh - rLow <= 1 || cHigh - cLow <= 1) {
@@ -61,7 +61,19 @@ private:
 		Matrix<Type> *M7T1 = new Matrix(tempRows, tempColumns);
 		Matrix<Type> *M7T2 = new Matrix(tempRows, tempColumns);
 		
-		strassenMul(A, rLow, rHigh, cLow, cHigh, scLow, scHigh, *M1, *M2, *M3, *M4, *M5, *M6, *M7, *M1T1, *M1T2, *M2T, *M3T, *M4T, *M5T, *M6T1, *M6T2, *M7T1, *M7T2);
+		int a1rLow = rLow, a1rHigh = (rHigh - rLow) / 2, a2rLow = (rHigh - rLow) / 2 + 1, a2rHigh = rHigh;
+		int a1cLow = scLow, a1cHigh = (scHigh - scLow) / 2, a2cLow = (scHigh - scLow) / 2 + 1, a2cHigh = scHigh;
+		int b1rLow = a1cLow, b1rHigh = a1cHigh, b2rLow = a2cLow, b2rHigh = a2cHigh;
+		int b1cLow = cLow, b1cHigh = (cHigh - cLow) / 2, b2cLow = (cHigh - cLow) / 2 + 1, b2cHigh = cHigh;
+		
+		// M1
+		this->add(*this, a1rLow, a1rHigh, a1cLow, a1cHigh, a2rLow, a2rHigh, a2cLow, a2cHigh, a1rLow, a1rHigh, a1cLow, a1cHigh, *M1T1);
+		A.add(A, b1rLow, b1rHigh, b1cLow, b1cHigh, b2rLow, b2rHigh, b2cLow, b2cHigh, b1rLow, b1rHigh, b1cLow, b1cHigh, *M1T2);
+		M1T1->strassenMul(*M1T2, a1rLow, a1rHigh, b1cLow, b1cHigh, a1cLow, a1cHigh, *M1);
+		
+		// M2
+		this->add(*this, a2rLow, a2rHigh, a1cLow, a1cHigh, a2rLow, a2rHigh, a2cLow, a2cHigh, a1rLow, a1rHigh, a1cLow, a1cHigh, *M2T);
+		M2T.strassenMul(A, a1rLow, a1rHigh, b1cLow, b1cHigh, a1cLow, a1cHigh, *M1);
 		
 		delete M1;
 		delete M2;
