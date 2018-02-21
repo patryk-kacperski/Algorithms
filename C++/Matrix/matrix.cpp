@@ -97,31 +97,68 @@ private:
 		Matrix<Type> *M7T1 = new Matrix(aTempRows, aTempColumns);
 		Matrix<Type> *M7T2 = new Matrix(bTempRows, bTempColumns);
 		
-		Range a11AddRange(a1rLow, a1rHigh, a1cLow, a1cHigh), b11AddRange(b1rLow, b1rHigh, b1cLow, b1cHigh);
-		Range a12AddRange(a1rLow, a1rHigh, a2cLow, a2cHigh), b12AddRange(b1rLow, b1rHigh, b2cLow, b2cHigh);
-		Range a21AddRange(a2rLow, a2rHigh, a1cLow, a1cHigh), b21AddRange(b2rLow, b2rHigh, b1cLow, b1cHigh);
-		Range a22AddRange(a2rLow, a2rHigh, a2cLow, a2cHigh), b22AddRange(b2rLow, b2rHigh, b2cLow, b2cHigh);
-		Range aResAddRange(0, aTempRows - 1, 0, aTempColumns - 1), bResAddRange(0, bTempRows - 1, 0, bTempColumns - 1);
+		Range a11Range(a1rLow, a1rHigh, a1cLow, a1cHigh), b11Range(b1rLow, b1rHigh, b1cLow, b1cHigh);
+		Range a12Range(a1rLow, a1rHigh, a2cLow, a2cHigh), b12Range(b1rLow, b1rHigh, b2cLow, b2cHigh);
+		Range a21Range(a2rLow, a2rHigh, a1cLow, a1cHigh), b21Range(b2rLow, b2rHigh, b1cLow, b1cHigh);
+		Range a22Range(a2rLow, a2rHigh, a2cLow, a2cHigh), b22Range(b2rLow, b2rHigh, b2cLow, b2cHigh);
+		Range aResRange(0, aTempRows - 1, 0, aTempColumns - 1), bResRange(0, bTempRows - 1, 0, bTempColumns - 1);
 		
-		Range resMulRange(0, aTempRows - 1, 0, bTempColumns - 1, 0, aTempColumns - 1);
-		
-		// Add mul ranges, finish M coefficients
+		Range resMulRange(0, aTempRows - 1, 0, bTempColumns - 1);
+		Range res11Range(a1rLow, a1rHigh, b1cLow, b1cHigh);
+		Range res12Range(a1rLow, a1rHigh, b2cLow, b2cHigh);
+		Range res21Range(a2rLow, a2rHigh, b1cLow, b1cHigh);
+		Range res22Range(a2rLow, a2rHigh, b2cLow, b2cHigh);
 		
 		// M1
-		// this->add(*this, a11AddRange, a22AddRange, aResAddRange, *M1T1);
-		// A.add(A, b11AddRange, b22AddRange, bResAddRange, *M1T2);
-		// M1T1->strassenMul(*M1T2,  *M1);
+		this->add(*this, a11Range, a22Range, aResRange, *M1T1);
+		A.add(A, b11Range, b22Range, bResRange, *M1T2);
+		M1T1->strassenMul(*M1T2, aResRange, bResRange, resMulRange, *M1);
 		
 		// M2
-		// this->add(*this, a2rLow, a2rHigh, a1cLow, a1cHigh, a2rLow, a2rHigh, a2cLow, a2cHigh, a1rLow, a1rHigh, a1cLow, a1cHigh, *M2T);
-		// M2T->strassenMul(A, a1rLow, a1rHigh, b1cLow, b1cHigh, a1cLow, a1cHigh, *M2);
+		this->add(*this, a21Range, a22Range, aResRange, *M2T);
+		M2T->strassenMul(A, aResRange, b11Range, resMulRange, *M2);
 		
 		// M3
-		// A.subtract(A, b1rLow, b1rHigh, b2cLow, b2cHigh, b2rLow, b2rHigh, b2cLow, b2cHigh, b1rLow, b1rHigh, b1cLow, b1cHigh, *M3T);
-		// this->strassenMul(*M3T, a1rLow, a1rHigh, b1cLow, b1cHigh, a1cLow, a1cHigh, *M3);
+		A.subtract(A, b12Range, b22Range, bResRange, *M3T);
+		this->strassenMul(*M3T, a11Range, bResRange, resMulRange, *M3);
 		
 		// M4
+		A.subtract(A, b21Range, b11Range, bResRange, *M4T);
+		this->strassenMul(*M4T, a22Range, bResRange, resMulRange, *M4);
 		
+		// M5
+		this->add(*this, a11Range, a12Range, aResRange, *M5T);
+		M5T->strassenMul(A, aResRange, b22Range, resMulRange, *M5);
+		
+		// M6
+		this->subtract(*this, a21Range, a11Range, aResRange, *M6T1);
+		A.add(A, b11Range, b12Range, bResRange, *M6T2);
+		M6T1->strassenMul(*M6T2, aResRange, bResRange, resMulRange, *M6);
+		
+		// M7
+		this->subtract(*this, a12Range, a22Range, aResRange, *M7T1);
+		A.add(A, b21Range, b22Range, bResRange, *M7T2);
+		M7T1->strassenMul(*M7T2, aResRange, bResRange, resMulRange, *M7);
+		
+		// res11
+		res.add(*M1, res11Range, resMulRange, res11Range, res);
+		res.add(*M4, res11Range, resMulRange, res11Range, res);
+		res.subtract(*M5, res11Range, resMulRange, res11Range, res);
+		res.add(*M7, res11Range, resMulRange, res11Range, res);
+		
+		// res12
+		res.add(*M3, res12Range, resMulRange, res12Range, res);
+		res.add(*M5, res12Range, resMulRange, res12Range, res);
+		
+		// res21
+		res.add(*M2, res21Range, resMulRange, res21Range, res);
+		res.add(*M4, res21Range, resMulRange, res21Range, res);
+		
+		// res22
+		res.add(*M1, res22Range, resMulRange, res22Range, res);
+		res.add(*M3, res22Range, resMulRange, res22Range, res);
+		res.subtract(*M2, res22Range, resMulRange, res22Range, res);
+		res.add(*M6, res22Range, resMulRange, res22Range, res);
 		
 		delete M1;
 		delete M2;
