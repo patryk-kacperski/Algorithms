@@ -2,32 +2,17 @@
 #include <vector>
 #include <exception>
 
-struct AdditionRange {
+struct Range {
 	int startRow;
 	int endRow;
 	int startColumn;
 	int endColumn;
 	
-	AdditionRange(int startRow, int endRow, int startColumn, int endColumn) : startRow(startRow),
-																				endRow(endRow),
-																				startColumn(startColumn),
-																				endColumn(endColumn) { }
-};
-
-struct MultiplicationRange {
-	int startRow;
-	int endRow;
-	int startColumn;
-	int endColumn;
-	int startOther;
-	int endOther;
-	
-	MultiplicationRange(int startRow, int endRow, int startColumn, int endColumn, int startOther, int endOther) : startRow(startRow),
-																													endRow(endRow),
-																													startColumn(startColumn),
-																													endColumn(endColumn),
-																													startOther(startOther),
-																													endOther(endOther) { }
+	Range(int startRow, int endRow, int startColumn, int endColumn) : 
+		startRow(startRow),
+		endRow(endRow),
+		startColumn(startColumn),
+		endColumn(endColumn) { }
 };
 
 template<typename Type>
@@ -37,7 +22,7 @@ private:
 	int columns;
 	std::vector<std::vector<Type> > data;
 	
-	void add(Matrix &A, AdditionRange firstRange, AdditionRange secondRange, AdditionRange resRange, Matrix &res) const {
+	void add(Matrix &A, Range firstRange, Range secondRange, Range resRange, Matrix &res) const {
 		for (int fi = firstRange.startRow, si = secondRange.startRow, ri = resRange.startRow; fi <= firstRange.endRow; ++fi, ++si, ++ri) {
 			for (int fj = firstRange.startColumn, sj = secondRange.startColumn, rj = resRange.startColumn; fj <= firstRange.endColumn; ++fj, ++sj, ++rj) {
 				res[ri][rj] = data[fi][fj] + A[si][sj];
@@ -45,7 +30,7 @@ private:
 		}
 	}
 	
-	void subtract(Matrix &A, AdditionRange firstRange, AdditionRange secondRange, AdditionRange resRange, Matrix &res) const {
+	void subtract(Matrix &A, Range firstRange, Range secondRange, Range resRange, Matrix &res) const {
 		for (int fi = firstRange.startRow, si = secondRange.startRow, ri = resRange.startRow; fi <= firstRange.endRow; ++fi, ++si, ++ri) {
 			for (int fj = firstRange.startColumn, sj = secondRange.startColumn, rj = resRange.startColumn; fj <= firstRange.endColumn; ++fj, ++sj, ++rj) {
 				res[ri][rj] = data[fi][fj] - A[si][sj];
@@ -53,43 +38,44 @@ private:
 		}
 	}
 	
-	void add(Matrix &A, AdditionRange range, Matrix &res) const {
+	void add(Matrix &A, Range range, Matrix &res) const {
 		add(A, range, range, range, res);
 	}
 	
-	void subtract(Matrix &A, AdditionRange range, Matrix &res) const {
+	void subtract(Matrix &A, Range range, Matrix &res) const {
 		subtract(A, range, range, range, res);
 	}
 	
-	void classicMul(Matrix &A, MultiplicationRange firstRange, MultiplicationRange secondRange, MultiplicationRange resRange, Matrix &res) const {
-		for (int fi = firstRange.startRow, si = secondRange.startRow, ri = resRange.startRow; fi <= firstRange.endRow; ++fi, ++si, ++ri) {
-			for (int fj = firstRange.startColumn, sj = secondRange.startColumn, rj = resRange.startColumn; fj <= firstRange.endColumn; ++fj, ++sj, ++rj) {
-				for (int fk = firstRange.startOther, sk = secondRange.startOther, rk = resRange.startOther; fk <= firstRange.endOther; ++fk, ++sk, ++rk) {
+	void classicMul(Matrix &A, Range firstRange, Range secondRange, Range resRange, Matrix &res) const {
+		for (int fi = firstRange.startRow, ri = resRange.startRow; fi <= firstRange.endRow; ++fi, ++ri) {
+			for (int sj = secondRange.startColumn, rj = resRange.startColumn; sj <= firstRange.endColumn; ++sj, ++rj) {
+				for (int fk = firstRange.startColumn, sk = secondRange.startRow; fk <= firstRange.endColumn; ++fk, ++sk) {
 					res[ri][rj] += data[fi][fk] * A[sk][sj];
 				}
 			}
 		}
 	}
 	
-	void classicMul(Matrix &A, MultiplicationRange range, Matrix &res) const {
-		classicMul(A, range, range, range, res);
+	void classicMul(Matrix &A, Range firstRange, Range secondRange, Matrix &res) const {
+		Range resRange(firstRange.startRow, firstRange.endRow, secondRange.startColumn, secondRange.endColumn);
+		classicMul(A, firstRange, secondRange, resRange, res);
 	}
 	
-	void strassenMul(Matrix &A, MultiplicationRange range, Matrix &res) const {
-		if (range.endRow - range.startRow <= 1 || range.endColumn - range.startColumn <= 1) {
-			classicMul(A, range.startRow, range.endRow, range.startColumn, range.endColumn, range.startOther, range.endOther, res);
+	void strassenMul(Matrix &A, Range firstRange, Range secondRange, Matrix &res) const {
+		if (firstRange.endRow - firstRange.startRow <= 1 || secondRange.endColumn - secondRange.startColumn <= 1) {
+			classicMul(A, firstRange, secondRange, res);
 			return;
 		}
 		
-		int a1rLow = range.startRow, a1rHigh = (range.endRow - range.startRow) / 2, a2rLow = (range.endRow - range.startRow) / 2 + 1, a2rHigh = range.endRow;
-		int a1cLow = range.startOther, a1cHigh = (range.endOther - range.startOther) / 2, a2cLow = (range.endOther - range.startOther) / 2 + 1, a2cHigh = range.endOther;
+		int a1rLow = firstRange.startRow, a1rHigh = (firstRange.endRow - firstRange.startRow) / 2, a2rLow = (firstRange.endRow - firstRange.startRow) / 2 + 1, a2rHigh = firstRange.endRow;
+		int a1cLow = firstRange.startColumn, a1cHigh = (firstRange.endColumn - firstRange.startColumn) / 2, a2cLow = (firstRange.endColumn - firstRange.startColumn) / 2 + 1, a2cHigh = firstRange.endColumn;
 		int b1rLow = a1cLow, b1rHigh = a1cHigh, b2rLow = a2cLow, b2rHigh = a2cHigh;
-		int b1cLow = range.startColumn, b1cHigh = (range.endColumn - range.startColumn) / 2, b2cLow = (range.endColumn - range.startColumn) / 2 + 1, b2cHigh = range.endColumn;
+		int b1cLow = secondRange.startColumn, b1cHigh = (secondRange.endColumn - secondRange.startColumn) / 2, b2cLow = (secondRange.endColumn - secondRange.startColumn) / 2 + 1, b2cHigh = secondRange.endColumn;
 		
-		int tempRows = (range.endRow - range.startRow) / 2 + 1;
-		int tempColumns = (range.endColumn - range.startColumn) / 2 + 1;
+		int tempRows = (firstRange.endRow - firstRange.startRow) / 2 + 1;
+		int tempColumns = (secondRange.endColumn - secondRange.startColumn) / 2 + 1;
 		int aTempRows = tempRows;
-		int aTempColumns = (range.endOther - range.startOther) / 2 + 1;
+		int aTempColumns = (firstRange.endColumn - firstRange.startColumn) / 2 + 1;
 		int bTempRows = aTempColumns;
 		int bTempColumns = tempColumns;
 		
@@ -111,13 +97,15 @@ private:
 		Matrix<Type> *M7T1 = new Matrix(aTempRows, aTempColumns);
 		Matrix<Type> *M7T2 = new Matrix(bTempRows, bTempColumns);
 		
-		AdditionRange a11AddRange(a1rLow, a1rHigh, a1cLow, a1cHigh), b11AddRange(b1rLow, b1rHigh, b1cLow, b1cHigh);
-		AdditionRange a12AddRange(a1rLow, a1rHigh, a2cLow, a2cHigh), b12AddRange(b1rLow, b1rHigh, b2cLow, b2cHigh);
-		AdditionRange a21AddRange(a2rLow, a2rHigh, a1cLow, a1cHigh), b21AddRange(b2rLow, b2rHigh, b1cLow, b1cHigh);
-		AdditionRange a22AddRange(a2rLow, a2rHigh, a2cLow, a2cHigh), b22AddRange(b2rLow, b2rHigh, b2cLow, b2cHigh);
-		AdditionRange aResAddRange(0, aTempRows - 1, 0, aTempColumns - 1), bResAddRange(0, bTempRows - 1, 0, bTempColumns - 1);
+		Range a11AddRange(a1rLow, a1rHigh, a1cLow, a1cHigh), b11AddRange(b1rLow, b1rHigh, b1cLow, b1cHigh);
+		Range a12AddRange(a1rLow, a1rHigh, a2cLow, a2cHigh), b12AddRange(b1rLow, b1rHigh, b2cLow, b2cHigh);
+		Range a21AddRange(a2rLow, a2rHigh, a1cLow, a1cHigh), b21AddRange(b2rLow, b2rHigh, b1cLow, b1cHigh);
+		Range a22AddRange(a2rLow, a2rHigh, a2cLow, a2cHigh), b22AddRange(b2rLow, b2rHigh, b2cLow, b2cHigh);
+		Range aResAddRange(0, aTempRows - 1, 0, aTempColumns - 1), bResAddRange(0, bTempRows - 1, 0, bTempColumns - 1);
 		
-		// Add mul ranges. Finish M coefficients
+		Range resMulRange(0, aTempRows - 1, 0, bTempColumns - 1, 0, aTempColumns - 1);
+		
+		// Add mul ranges, finish M coefficients
 		
 		// M1
 		// this->add(*this, a11AddRange, a22AddRange, aResAddRange, *M1T1);
@@ -229,7 +217,7 @@ public:
 			throw std::invalid_argument("Invalid matrix passed as an addition argument");
 		}
 		Matrix<Type> *res = new Matrix(rows, columns);
-		AdditionRange range(0, rows - 1, 0, columns - 1);
+		Range range(0, rows - 1, 0, columns - 1);
 		add(A, range, *res);
 		return res;
 	}
@@ -239,8 +227,8 @@ public:
 			throw std::invalid_argument("Invalid matrix passed as a multiplication argument");
 		}
 		Matrix *res = new Matrix(rows, A.columns);
-		MultiplicationRange range(0, rows - 1, 0, A.columns - 1, 0, columns - 1);
-		classicMul(A, range, *res);
+		Range firstRange(0, rows - 1, 0, columns -1), secondRange(0, A.rows - 1, 0, A.columns - 1);
+		classicMul(A, firstRange, secondRange, *res);
 		return res;
 	}
 };
