@@ -53,7 +53,7 @@ private:
 	
 	void classicMul(Matrix const &A, Range firstRange, Range secondRange, Range resRange, Matrix &res) const {
 		for (int fi = firstRange.startRow, ri = resRange.startRow; fi <= firstRange.endRow; ++fi, ++ri) {
-			for (int sj = secondRange.startColumn, rj = resRange.startColumn; sj <= firstRange.endColumn; ++sj, ++rj) {
+			for (int sj = secondRange.startColumn, rj = resRange.startColumn; sj <= secondRange.endColumn; ++sj, ++rj) {
 				for (int fk = firstRange.startColumn, sk = secondRange.startRow; fk <= firstRange.endColumn; ++fk, ++sk) {
 					res[ri][rj] += data[fi][fk] * A.data[sk][sj];
 				}
@@ -62,8 +62,7 @@ private:
 	}
 	
 	void classicMul(Matrix const &A, Range firstRange, Range secondRange, Matrix &res) const {
-		// error is here. change rows to create range from begginign
-		Range resRange(firstRange.startRow, firstRange.endRow, secondRange.startColumn, secondRange.endColumn);
+		Range resRange(0, firstRange.endRow - firstRange.startRow, 0, secondRange.endColumn - secondRange.startColumn);
 		classicMul(A, firstRange, secondRange, resRange, res);
 	}
 	
@@ -119,41 +118,32 @@ private:
 		this->add(*this, a11Range, a22Range, aResRange, *M1T1);
 		A.add(A, b11Range, b22Range, bResRange, *M1T2);
 		M1T1->strassenMul(*M1T2, aResRange, bResRange, *M1);
-		std::cerr << "M1T1:\n" << *M1T1 << "\nM1:\n" << *M1 << "\n"; 
 		
 		// M2
 		this->add(*this, a21Range, a22Range, aResRange, *M2T);
 		M2T->strassenMul(A, aResRange, b11Range, *M2);
-		std::cerr << "\nM2:\n" << *M2 << "\n"; 
 		
 		// M3
 		A.subtract(A, b12Range, b22Range, bResRange, *M3T);
 		this->strassenMul(*M3T, a11Range, bResRange, *M3);
-		std::cerr << "\nM3:\n" << *M3 << "\n"; 
 		
 		// M4
 		A.subtract(A, b21Range, b11Range, bResRange, *M4T);
-		std::cerr << "\na22Range:\n" << a22Range << "\n";
-		std::cerr << "\nbResRange\n" << bResRange << "\n";
 		this->strassenMul(*M4T, a22Range, bResRange, *M4);
-		std::cerr << "\nM4:\n" << *M4 << "\n"; 
 		
 		// M5
 		this->add(*this, a11Range, a12Range, aResRange, *M5T);
 		M5T->strassenMul(A, aResRange, b22Range, *M5);
-		std::cerr << "\nM5:\n" << *M5 << "\n"; 
 		
 		// M6
 		this->subtract(*this, a21Range, a11Range, aResRange, *M6T1);
 		A.add(A, b11Range, b12Range, bResRange, *M6T2);
 		M6T1->strassenMul(*M6T2, aResRange, bResRange, *M6);
-		std::cerr << "\nM6:\n" << *M6 << "\n"; 
 		
 		// M7
 		this->subtract(*this, a12Range, a22Range, aResRange, *M7T1);
 		A.add(A, b21Range, b22Range, bResRange, *M7T2);
 		M7T1->strassenMul(*M7T2, aResRange, bResRange, *M7);
-		std::cerr << "\nM7:\n" << *M7 << "\n"; 
 		
 		// res11
 		res.add(*M1, res11Range, resMulRange, res11Range, res);
