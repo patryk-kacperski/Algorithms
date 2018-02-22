@@ -1,6 +1,10 @@
 #include <iostream>
 #include <vector>
 #include <exception>
+#include <chrono>
+
+typedef std::chrono::high_resolution_clock Clock;
+typedef std::chrono::high_resolution_clock::time_point TimePoint;
 
 struct Range {
 	int startRow;
@@ -72,10 +76,10 @@ private:
 			return;
 		}
 		
-		int a1rLow = firstRange.startRow, a1rHigh = (firstRange.endRow - firstRange.startRow) / 2, a2rLow = (firstRange.endRow - firstRange.startRow) / 2 + 1, a2rHigh = firstRange.endRow;
-		int a1cLow = firstRange.startColumn, a1cHigh = (firstRange.endColumn - firstRange.startColumn) / 2, a2cLow = (firstRange.endColumn - firstRange.startColumn) / 2 + 1, a2cHigh = firstRange.endColumn;
-		int b1rLow = a1cLow, b1rHigh = a1cHigh, b2rLow = a2cLow, b2rHigh = a2cHigh;
-		int b1cLow = secondRange.startColumn, b1cHigh = (secondRange.endColumn - secondRange.startColumn) / 2, b2cLow = (secondRange.endColumn - secondRange.startColumn) / 2 + 1, b2cHigh = secondRange.endColumn;
+		int a1rLow = firstRange.startRow, a1rHigh = (firstRange.endRow - firstRange.startRow) / 2, a2rLow = a1rHigh + 1, a2rHigh = firstRange.endRow;
+		int a1cLow = firstRange.startColumn, a1cHigh = (firstRange.endColumn - firstRange.startColumn) / 2, a2cLow = a1cHigh + 1, a2cHigh = firstRange.endColumn;
+		int b1rLow = secondRange.startRow, b1rHigh = (secondRange.endRow - secondRange.startRow) / 2, b2rLow = b1rHigh + 1, b2rHigh = secondRange.endRow;
+		int b1cLow = secondRange.startColumn, b1cHigh = (secondRange.endColumn - secondRange.startColumn) / 2, b2cLow = b1cHigh + 1, b2cHigh = secondRange.endColumn;
 		
 		int tempRows = (firstRange.endRow - firstRange.startRow) / 2 + 1;
 		int tempColumns = (secondRange.endColumn - secondRange.startColumn) / 2 + 1;
@@ -118,32 +122,39 @@ private:
 		this->add(*this, a11Range, a22Range, aResRange, *M1T1);
 		A.add(A, b11Range, b22Range, bResRange, *M1T2);
 		M1T1->strassenMul(*M1T2, aResRange, bResRange, *M1);
+		std::cerr << "M1:\n" << *M1 << "\n";
 		
 		// M2
 		this->add(*this, a21Range, a22Range, aResRange, *M2T);
 		M2T->strassenMul(A, aResRange, b11Range, *M2);
+		std::cerr << "M2:\n" << *M2 << "\n";
 		
 		// M3
 		A.subtract(A, b12Range, b22Range, bResRange, *M3T);
 		this->strassenMul(*M3T, a11Range, bResRange, *M3);
+		std::cerr << "M3:\n" << *M3 << "\n";
 		
 		// M4
 		A.subtract(A, b21Range, b11Range, bResRange, *M4T);
 		this->strassenMul(*M4T, a22Range, bResRange, *M4);
+		std::cerr << "M4:\n" << *M4 << "\n";
 		
 		// M5
 		this->add(*this, a11Range, a12Range, aResRange, *M5T);
 		M5T->strassenMul(A, aResRange, b22Range, *M5);
+		std::cerr << "M5:\n" << *M5 << "\n";
 		
 		// M6
 		this->subtract(*this, a21Range, a11Range, aResRange, *M6T1);
 		A.add(A, b11Range, b12Range, bResRange, *M6T2);
 		M6T1->strassenMul(*M6T2, aResRange, bResRange, *M6);
+		std::cerr << "M6:\n" << *M6 << "\n";
 		
 		// M7
 		this->subtract(*this, a12Range, a22Range, aResRange, *M7T1);
 		A.add(A, b21Range, b22Range, bResRange, *M7T2);
 		M7T1->strassenMul(*M7T2, aResRange, bResRange, *M7);
+		std::cerr << "M7:\n" << *M7 << "\n";
 		
 		// res11
 		res.add(*M1, res11Range, resMulRange, res11Range, res);
@@ -246,17 +257,24 @@ public:
 		}
 		Matrix *res = new Matrix(rows, A.columns);
 		Range firstRange(0, rows - 1, 0, columns -1), secondRange(0, A.rows - 1, 0, A.columns - 1);
+		
 		strassenMul(A, firstRange, secondRange, *res);
 		return res;
 	}
 };
 
 int main() {
-	Matrix<int> A, B;
-	std::cin >> A >> B;
+	int const size = 64;
+	Matrix<int> A(size, size), B(size, size);
+	// Matrix<int> A, B;
+	// std::cin >> A >> B;
 	try {
+		TimePoint t1 = Clock::now();
 		Matrix<int> *C = A * B;
-		std::cout << (*C);
+		TimePoint t2 = Clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+		std::cout << duration << "\n";
+		// std::cout << *C;
 		delete C;
 	} catch (std::invalid_argument &e) {
 		std::cout << e.what();
