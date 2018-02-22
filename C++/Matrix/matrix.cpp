@@ -13,6 +13,11 @@ struct Range {
 		endRow(endRow),
 		startColumn(startColumn),
 		endColumn(endColumn) { }
+		
+	friend std::ostream& operator<<(std::ostream& os, const Range &range) {
+		os << range.startRow << "\n" << range.endRow << "\n" << range.startColumn << "\n" << range.endColumn << "\n";
+		return os;
+	}
 };
 
 template<typename Type>
@@ -22,46 +27,47 @@ private:
 	int columns;
 	std::vector<std::vector<Type> > data;
 	
-	void add(Matrix &A, Range firstRange, Range secondRange, Range resRange, Matrix &res) const {
+	void add(Matrix const &A, Range firstRange, Range secondRange, Range resRange, Matrix &res) const {
 		for (int fi = firstRange.startRow, si = secondRange.startRow, ri = resRange.startRow; fi <= firstRange.endRow; ++fi, ++si, ++ri) {
 			for (int fj = firstRange.startColumn, sj = secondRange.startColumn, rj = resRange.startColumn; fj <= firstRange.endColumn; ++fj, ++sj, ++rj) {
-				res[ri][rj] = data[fi][fj] + A[si][sj];
+				res[ri][rj] = data[fi][fj] + A.data[si][sj];
 			}
 		}
 	}
 	
-	void subtract(Matrix &A, Range firstRange, Range secondRange, Range resRange, Matrix &res) const {
+	void subtract(Matrix const &A, Range firstRange, Range secondRange, Range resRange, Matrix &res) const {
 		for (int fi = firstRange.startRow, si = secondRange.startRow, ri = resRange.startRow; fi <= firstRange.endRow; ++fi, ++si, ++ri) {
 			for (int fj = firstRange.startColumn, sj = secondRange.startColumn, rj = resRange.startColumn; fj <= firstRange.endColumn; ++fj, ++sj, ++rj) {
-				res[ri][rj] = data[fi][fj] - A[si][sj];
+				res[ri][rj] = data[fi][fj] - A.data[si][sj];
 			}
 		}
 	}
 	
-	void add(Matrix &A, Range range, Matrix &res) const {
+	void add(Matrix const &A, Range range, Matrix &res) const {
 		add(A, range, range, range, res);
 	}
 	
-	void subtract(Matrix &A, Range range, Matrix &res) const {
+	void subtract(Matrix const &A, Range range, Matrix &res) const {
 		subtract(A, range, range, range, res);
 	}
 	
-	void classicMul(Matrix &A, Range firstRange, Range secondRange, Range resRange, Matrix &res) const {
+	void classicMul(Matrix const &A, Range firstRange, Range secondRange, Range resRange, Matrix &res) const {
 		for (int fi = firstRange.startRow, ri = resRange.startRow; fi <= firstRange.endRow; ++fi, ++ri) {
 			for (int sj = secondRange.startColumn, rj = resRange.startColumn; sj <= firstRange.endColumn; ++sj, ++rj) {
 				for (int fk = firstRange.startColumn, sk = secondRange.startRow; fk <= firstRange.endColumn; ++fk, ++sk) {
-					res[ri][rj] += data[fi][fk] * A[sk][sj];
+					res[ri][rj] += data[fi][fk] * A.data[sk][sj];
 				}
 			}
 		}
 	}
 	
-	void classicMul(Matrix &A, Range firstRange, Range secondRange, Matrix &res) const {
+	void classicMul(Matrix const &A, Range firstRange, Range secondRange, Matrix &res) const {
+		// error is here. change rows to create range from begginign
 		Range resRange(firstRange.startRow, firstRange.endRow, secondRange.startColumn, secondRange.endColumn);
 		classicMul(A, firstRange, secondRange, resRange, res);
 	}
 	
-	void strassenMul(Matrix &A, Range firstRange, Range secondRange, Matrix &res) const {
+	void strassenMul(Matrix const &A, Range firstRange, Range secondRange, Matrix &res) const {
 		if (firstRange.endRow - firstRange.startRow <= 1 || secondRange.endColumn - secondRange.startColumn <= 1) {
 			classicMul(A, firstRange, secondRange, res);
 			return;
@@ -112,33 +118,42 @@ private:
 		// M1
 		this->add(*this, a11Range, a22Range, aResRange, *M1T1);
 		A.add(A, b11Range, b22Range, bResRange, *M1T2);
-		M1T1->strassenMul(*M1T2, aResRange, bResRange, resMulRange, *M1);
+		M1T1->strassenMul(*M1T2, aResRange, bResRange, *M1);
+		std::cerr << "M1T1:\n" << *M1T1 << "\nM1:\n" << *M1 << "\n"; 
 		
 		// M2
 		this->add(*this, a21Range, a22Range, aResRange, *M2T);
-		M2T->strassenMul(A, aResRange, b11Range, resMulRange, *M2);
+		M2T->strassenMul(A, aResRange, b11Range, *M2);
+		std::cerr << "\nM2:\n" << *M2 << "\n"; 
 		
 		// M3
 		A.subtract(A, b12Range, b22Range, bResRange, *M3T);
-		this->strassenMul(*M3T, a11Range, bResRange, resMulRange, *M3);
+		this->strassenMul(*M3T, a11Range, bResRange, *M3);
+		std::cerr << "\nM3:\n" << *M3 << "\n"; 
 		
 		// M4
 		A.subtract(A, b21Range, b11Range, bResRange, *M4T);
-		this->strassenMul(*M4T, a22Range, bResRange, resMulRange, *M4);
+		std::cerr << "\na22Range:\n" << a22Range << "\n";
+		std::cerr << "\nbResRange\n" << bResRange << "\n";
+		this->strassenMul(*M4T, a22Range, bResRange, *M4);
+		std::cerr << "\nM4:\n" << *M4 << "\n"; 
 		
 		// M5
 		this->add(*this, a11Range, a12Range, aResRange, *M5T);
-		M5T->strassenMul(A, aResRange, b22Range, resMulRange, *M5);
+		M5T->strassenMul(A, aResRange, b22Range, *M5);
+		std::cerr << "\nM5:\n" << *M5 << "\n"; 
 		
 		// M6
 		this->subtract(*this, a21Range, a11Range, aResRange, *M6T1);
 		A.add(A, b11Range, b12Range, bResRange, *M6T2);
-		M6T1->strassenMul(*M6T2, aResRange, bResRange, resMulRange, *M6);
+		M6T1->strassenMul(*M6T2, aResRange, bResRange, *M6);
+		std::cerr << "\nM6:\n" << *M6 << "\n"; 
 		
 		// M7
 		this->subtract(*this, a12Range, a22Range, aResRange, *M7T1);
 		A.add(A, b21Range, b22Range, bResRange, *M7T2);
-		M7T1->strassenMul(*M7T2, aResRange, bResRange, resMulRange, *M7);
+		M7T1->strassenMul(*M7T2, aResRange, bResRange, *M7);
+		std::cerr << "\nM7:\n" << *M7 << "\n"; 
 		
 		// res11
 		res.add(*M1, res11Range, resMulRange, res11Range, res);
@@ -178,26 +193,6 @@ private:
 		delete M7T2;
 	}
 	
-	Matrix *strassenMul(Matrix const &A) const {
-		if (rows <= 2 || columns <= 2 || A.rows <= 2 || A.columns <= 2) {
-			return classicMul(A);
-		}
-		Matrix *mat1 = NULL, *mat2 = NULL;
-		// mat1 = (rows & 1 || columns & 1) ? this->expanded() : this;
-		// mat2 = (A.rows & 1 || A.columns & 1) ? A.expanded() : *A;
-	}
-	
-	Matrix *coppersmithWinogradMul(Matrix const &A) const {
-		// Maybe one day xD
-		return NULL;
-	}
-	
-	Matrix *expanded() {
-		
-		return NULL;
-		
-	}
-	
 public:
 	// MARK: constructors
 	Matrix(std::vector<std::vector<Type> > data) : data(data), rows(data.size()), columns(data[0].size()) { }
@@ -210,10 +205,6 @@ public:
 	}
 	
 	Matrix() { }
-	
-	Matrix(const Matrix &other) {
-		
-	}
 	
 	// MARK: getters
 	int getRows() { return rows; }
@@ -265,7 +256,7 @@ public:
 		}
 		Matrix *res = new Matrix(rows, A.columns);
 		Range firstRange(0, rows - 1, 0, columns -1), secondRange(0, A.rows - 1, 0, A.columns - 1);
-		classicMul(A, firstRange, secondRange, *res);
+		strassenMul(A, firstRange, secondRange, *res);
 		return res;
 	}
 };
