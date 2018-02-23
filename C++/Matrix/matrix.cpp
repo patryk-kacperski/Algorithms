@@ -76,10 +76,10 @@ private:
 			return;
 		}
 		
-		int a1rLow = firstRange.startRow, a1rHigh = (firstRange.endRow - firstRange.startRow) / 2, a2rLow = a1rHigh + 1, a2rHigh = firstRange.endRow;
-		int a1cLow = firstRange.startColumn, a1cHigh = (firstRange.endColumn - firstRange.startColumn) / 2, a2cLow = a1cHigh + 1, a2cHigh = firstRange.endColumn;
-		int b1rLow = secondRange.startRow, b1rHigh = (secondRange.endRow - secondRange.startRow) / 2, b2rLow = b1rHigh + 1, b2rHigh = secondRange.endRow;
-		int b1cLow = secondRange.startColumn, b1cHigh = (secondRange.endColumn - secondRange.startColumn) / 2, b2cLow = b1cHigh + 1, b2cHigh = secondRange.endColumn;
+		int a1rLow = firstRange.startRow, a1rHigh = a1rLow + ((firstRange.endRow - firstRange.startRow) / 2), a2rLow = a1rHigh + 1, a2rHigh = firstRange.endRow;
+		int a1cLow = firstRange.startColumn, a1cHigh = a1cLow + ((firstRange.endColumn - firstRange.startColumn) / 2), a2cLow = a1cHigh + 1, a2cHigh = firstRange.endColumn;
+		int b1rLow = secondRange.startRow, b1rHigh = b1rLow + ((secondRange.endRow - secondRange.startRow) / 2), b2rLow = b1rHigh + 1, b2rHigh = secondRange.endRow;
+		int b1cLow = secondRange.startColumn, b1cHigh = b1cLow + ((secondRange.endColumn - secondRange.startColumn) / 2), b2cLow = b1cHigh + 1, b2cHigh = secondRange.endColumn;
 		
 		int tempRows = (firstRange.endRow - firstRange.startRow) / 2 + 1;
 		int tempColumns = (secondRange.endColumn - secondRange.startColumn) / 2 + 1;
@@ -113,6 +113,7 @@ private:
 		Range aResRange(0, aTempRows - 1, 0, aTempColumns - 1), bResRange(0, bTempRows - 1, 0, bTempColumns - 1);
 		
 		Range resMulRange(0, aTempRows - 1, 0, bTempColumns - 1);
+		// Error is here
 		Range res11Range(a1rLow, a1rHigh, b1cLow, b1cHigh);
 		Range res12Range(a1rLow, a1rHigh, b2cLow, b2cHigh);
 		Range res21Range(a2rLow, a2rHigh, b1cLow, b1cHigh);
