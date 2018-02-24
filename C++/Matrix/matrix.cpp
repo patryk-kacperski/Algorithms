@@ -76,10 +76,14 @@ private:
 			return;
 		}
 		
+		int resRows = res.data.size(), resColumns = res.data[0].size();
+		
 		int a1rLow = firstRange.startRow, a1rHigh = a1rLow + ((firstRange.endRow - firstRange.startRow) / 2), a2rLow = a1rHigh + 1, a2rHigh = firstRange.endRow;
 		int a1cLow = firstRange.startColumn, a1cHigh = a1cLow + ((firstRange.endColumn - firstRange.startColumn) / 2), a2cLow = a1cHigh + 1, a2cHigh = firstRange.endColumn;
 		int b1rLow = secondRange.startRow, b1rHigh = b1rLow + ((secondRange.endRow - secondRange.startRow) / 2), b2rLow = b1rHigh + 1, b2rHigh = secondRange.endRow;
 		int b1cLow = secondRange.startColumn, b1cHigh = b1cLow + ((secondRange.endColumn - secondRange.startColumn) / 2), b2cLow = b1cHigh + 1, b2cHigh = secondRange.endColumn;
+		int res1rLow = 0, res1rHigh = (resRows / 2) - 1, res2rLow = res1rHigh + 1, res2rHigh = resRows - 1;
+		int res1cLow = 0, res1cHigh = (resColumns / 2) - 1, res2cLow = res1cHigh + 1, res2cHigh = resColumns - 1;
 		
 		int tempRows = (firstRange.endRow - firstRange.startRow) / 2 + 1;
 		int tempColumns = (secondRange.endColumn - secondRange.startColumn) / 2 + 1;
@@ -113,49 +117,48 @@ private:
 		Range aResRange(0, aTempRows - 1, 0, aTempColumns - 1), bResRange(0, bTempRows - 1, 0, bTempColumns - 1);
 		
 		Range resMulRange(0, aTempRows - 1, 0, bTempColumns - 1);
-		// Error is here
-		Range res11Range(a1rLow, a1rHigh, b1cLow, b1cHigh);
-		Range res12Range(a1rLow, a1rHigh, b2cLow, b2cHigh);
-		Range res21Range(a2rLow, a2rHigh, b1cLow, b1cHigh);
-		Range res22Range(a2rLow, a2rHigh, b2cLow, b2cHigh);
+		Range res11Range(res1rLow, res1rHigh, res1cLow, res1cHigh);
+		Range res12Range(res1rLow, res1rHigh, res2cLow, res2cHigh);
+		Range res21Range(res2rLow, res2rHigh, res1cLow, res1cHigh);
+		Range res22Range(res2rLow, res2rHigh, res2cLow, res2cHigh);
 		
 		// M1
 		this->add(*this, a11Range, a22Range, aResRange, *M1T1);
 		A.add(A, b11Range, b22Range, bResRange, *M1T2);
-		M1T1->strassenMul(*M1T2, aResRange, bResRange, *M1);
-		std::cerr << "M1:\n" << *M1 << "\n";
+		M1T1->classicMul(*M1T2, aResRange, bResRange, *M1);
+		// std::cerr << "M1:\n" << *M1 << "\n";
 		
 		// M2
 		this->add(*this, a21Range, a22Range, aResRange, *M2T);
-		M2T->strassenMul(A, aResRange, b11Range, *M2);
-		std::cerr << "M2:\n" << *M2 << "\n";
+		M2T->classicMul(A, aResRange, b11Range, *M2);
+		// std::cerr << "M2:\n" << *M2 << "\n";
 		
 		// M3
 		A.subtract(A, b12Range, b22Range, bResRange, *M3T);
-		this->strassenMul(*M3T, a11Range, bResRange, *M3);
-		std::cerr << "M3:\n" << *M3 << "\n";
+		this->classicMul(*M3T, a11Range, bResRange, *M3);
+		// std::cerr << "M3:\n" << *M3 << "\n";
 		
 		// M4
 		A.subtract(A, b21Range, b11Range, bResRange, *M4T);
-		this->strassenMul(*M4T, a22Range, bResRange, *M4);
-		std::cerr << "M4:\n" << *M4 << "\n";
+		this->classicMul(*M4T, a22Range, bResRange, *M4);
+		// std::cerr << "M4:\n" << *M4 << "\n";
 		
 		// M5
 		this->add(*this, a11Range, a12Range, aResRange, *M5T);
-		M5T->strassenMul(A, aResRange, b22Range, *M5);
-		std::cerr << "M5:\n" << *M5 << "\n";
+		M5T->classicMul(A, aResRange, b22Range, *M5);
+		// std::cerr << "M5:\n" << *M5 << "\n";
 		
 		// M6
 		this->subtract(*this, a21Range, a11Range, aResRange, *M6T1);
 		A.add(A, b11Range, b12Range, bResRange, *M6T2);
-		M6T1->strassenMul(*M6T2, aResRange, bResRange, *M6);
-		std::cerr << "M6:\n" << *M6 << "\n";
+		M6T1->classicMul(*M6T2, aResRange, bResRange, *M6);
+		// std::cerr << "M6:\n" << *M6 << "\n";
 		
 		// M7
 		this->subtract(*this, a12Range, a22Range, aResRange, *M7T1);
 		A.add(A, b21Range, b22Range, bResRange, *M7T2);
-		M7T1->strassenMul(*M7T2, aResRange, bResRange, *M7);
-		std::cerr << "M7:\n" << *M7 << "\n";
+		M7T1->classicMul(*M7T2, aResRange, bResRange, *M7);
+		// std::cerr << "M7:\n" << *M7 << "\n";
 		
 		// res11
 		res.add(*M1, res11Range, resMulRange, res11Range, res);
@@ -265,7 +268,7 @@ public:
 };
 
 int main() {
-	int const size = 64;
+	int const size = 1024;
 	Matrix<int> A(size, size), B(size, size);
 	// Matrix<int> A, B;
 	// std::cin >> A >> B;
