@@ -1,8 +1,8 @@
-#include <iostream>
+#ifndef QUICKSORT_H
+#define QUICKSORT_H
+
 #include <vector>
 #include <utility>
-
-static int counter = 0;
 
 template<typename Type, typename IsLess>
 int partition(std::vector<Type> &S, IsLess less, int low, int high) {
@@ -31,18 +31,4 @@ void quicksort(std::vector<Type> &S, IsLess less) {
 	quicksort(S, less, low, high);
 }
 
-int main() {
-	int n;
-	std::vector<int> S;
-	std::cin >> n;
-	for (int i = 0; i < n; ++i) {
-		int temp;
-		std::cin >> temp;
-		S.push_back(temp);
-	}
-	quicksort(S, [](int a, int b) -> bool { return a < b; });
-	for (int i = 0; i < S.size(); ++i) {
-		std::cout << S[i] << " ";
-	}
-	return 0;
-}
+#endif
