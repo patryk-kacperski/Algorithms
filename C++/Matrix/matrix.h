@@ -21,10 +21,14 @@ private:
 	int rows;
 	int columns;
 	std::vector<std::vector<Type> > data;
+	bool shouldCheck;
 	
 	void add(Matrix const &A, Range firstRange, Range secondRange, Range resRange, Matrix &res) const {
 		for (int fi = firstRange.startRow, si = secondRange.startRow, ri = resRange.startRow; fi <= firstRange.endRow; ++fi, ++si, ++ri) {
 			for (int fj = firstRange.startColumn, sj = secondRange.startColumn, rj = resRange.startColumn; fj <= firstRange.endColumn; ++fj, ++sj, ++rj) {
+				// bool firstCheck = (fi >= data.size() || si >= A.data.size() || fi >= res.data.size());
+				// bool secondCheck = (fj >= data[0].size() || sj >= A.data[0].size() || res.data[0].size());
+				// if (firstCheck || secondCheck) { continue; }
 				res[ri][rj] = data[fi][fj] + A.data[si][sj];
 			}
 		}
@@ -33,6 +37,9 @@ private:
 	void subtract(Matrix const &A, Range firstRange, Range secondRange, Range resRange, Matrix &res) const {
 		for (int fi = firstRange.startRow, si = secondRange.startRow, ri = resRange.startRow; fi <= firstRange.endRow; ++fi, ++si, ++ri) {
 			for (int fj = firstRange.startColumn, sj = secondRange.startColumn, rj = resRange.startColumn; fj <= firstRange.endColumn; ++fj, ++sj, ++rj) {
+				// bool firstCheck = (fi >= data.size() || si >= A.data.size() || fi >= res.data.size());
+				// bool secondCheck = (fj >= data[0].size() || sj >= A.data[0].size() || res.data[0].size());
+				// if (firstCheck || secondCheck) { continue; }
 				res[ri][rj] = data[fi][fj] - A.data[si][sj];
 			}
 		}
@@ -50,6 +57,10 @@ private:
 		for (int fi = firstRange.startRow, ri = resRange.startRow; fi <= firstRange.endRow; ++fi, ++ri) {
 			for (int sj = secondRange.startColumn, rj = resRange.startColumn; sj <= secondRange.endColumn; ++sj, ++rj) {
 				for (int fk = firstRange.startColumn, sk = secondRange.startRow; fk <= firstRange.endColumn; ++fk, ++sk) {
+					// bool firstCheck = (fi >= data.size() || ri >= res.data.size());
+					// bool secondCheck = (sj >= A.data[0].size() || rj >= res.data[0].size());
+					// bool thirdCheck = (fk >= data[0].size() || sk >= A.data.size());
+					// if (firstCheck || secondCheck || thirdCheck) { continue; }
 					res[ri][rj] += data[fi][fk] * A.data[sk][sj];
 				}
 			}
@@ -62,6 +73,8 @@ private:
 	}
 	
 	void strassenMul(Matrix const &A, Range firstRange, Range secondRange, Matrix &res) const {
+		extend()
+		
 		if (firstRange.endRow - firstRange.startRow <= 1 || secondRange.endColumn - secondRange.startColumn <= 1) {
 			classicMul(A, firstRange, secondRange, res);
 			return;
@@ -189,11 +202,24 @@ private:
 		delete M7T2;
 	}
 	
+	void extend(bool vertically, bool horizontally) {
+		if (vertically) {
+			std::vector<Type> row(data[0].size());
+			data.push_back(row);
+		}
+		if (horizontally) {
+			for (int i = 0; i < data.size(); ++i) {
+				Type elem(0);
+				data[i].push_back(elem);
+			}
+		}
+	}
+	
 public:
 	// MARK: constructors
-	Matrix(std::vector<std::vector<Type> > data) : data(data), rows(data.size()), columns(data[0].size()) { }
+	Matrix(std::vector<std::vector<Type> > data) : data(data), rows(data.size()), columns(data[0].size()), shouldCheck(false) { }
 	
-	Matrix(int rows, int columns) : rows(rows), columns(columns) { 
+	Matrix(int rows, int columns) : rows(rows), columns(columns), shouldCheck(false) { 
 		for (int i = 0; i < rows; ++i) {
 			std::vector<Type> v(columns);
 			data.push_back(v);

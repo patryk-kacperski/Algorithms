@@ -5,7 +5,7 @@ typedef std::chrono::high_resolution_clock Clock;
 typedef std::chrono::high_resolution_clock::time_point TimePoint;
 
 int main() {
-	int const size = 1024;
+	int const size = 512;
 	Matrix<int> A(size, size), B(size, size);
 	// Matrix<int> A, B;
 	// std::cin >> A >> B;
