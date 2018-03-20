@@ -53,3 +53,73 @@ so
 now we check
 
 `p(A[5], 7) = p(14, 7) = false`
+
+so we assign
+
+`high := mid = 5`
+
+since
+
+`low < high`
+
+we assign
+
+`mid := floor(0 + 5) / 2) = 2`
+
+_A_ = [1(**low**), 2, 4(**mid**), 7, 12, 14(**high**), 17, 21, 25, 29, 31, 37]
+
+now we check
+
+`p(A[2], 7) = p(4, 7) = true`
+
+so we assign
+
+`low := mid + 1 = 3`
+
+since
+
+`low < high`
+
+we assign
+
+`mid := floor((3 + 5) / 2) = 4`
+
+_A_ = [1, 2, 4, 7(**low**), 12(**mid**), 14(**high**), 17, 21, 25, 29, 31, 37]
+
+now we check
+
+`p(A[4], 7) = p(12, 7) = false`
+
+so we assign
+
+`high := mid = 4`
+
+since 
+
+`low < high`
+
+we assign
+
+`mid := floor((3 + 4) / 2) = 3`
+
+_A_ = [1, 2, 4, 7(**low**)(**mid**), 12(**high**), 14, 17, 21, 25, 29, 31, 37]
+
+now we check
+
+`p(A[3], 7) = p(7, 7) = false`
+
+so we assign
+
+`high := mid = 3`
+
+since 
+
+`low = high`
+
+we finished search algorithm. Now we need to check, weather object we found is the one we're looking for
+
+since
+
+`p(7, 7) or p(7, 7) = false`
+
+the answer is, element 7 has index 3 in array _A_
