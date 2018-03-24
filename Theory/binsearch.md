@@ -30,7 +30,7 @@ while low < high:
 if p(A[low], x) or p(x, A[low]):
   return -1
 else:
-  return A[low]
+  return low
 ```
 
 ### Examples
