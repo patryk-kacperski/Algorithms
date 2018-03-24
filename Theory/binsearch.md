@@ -120,6 +120,89 @@ we finished search algorithm. Now we need to check, weather object we found is t
 
 since
 
+`p(7, 7) = false`
+
+so
+
 `p(7, 7) or p(7, 7) = false`
 
-the answer is, element 7 has index 3 in array _A_
+and
+
+`low = 3`
+
+then the answer is 3, because element 7 has index 3 in array _A_
+
+##### Example 2
+
+Assume
+- _A_ = [1(**low**), 2, 4, 7, 12, 14(**mid**), 17, 21, 25, 29, 31, 37(**high**)], so _n_ = 12
+- _p_(a, b) = { a < b }
+- _x_ = 32
+
+We start with assigning
+
+`low := 0`, `high := 11`
+
+so
+
+`mid := floor((0 + 11) / 2) = 5`
+
+now we check
+
+`p(A[5], 32) = p(14, 32) = true`
+
+so we assign
+
+`low := mid + 1 = 6`
+
+since
+
+`low < high`
+
+we assign
+
+`mid := floor(6 + 11) / 2) = 8`
+
+_A_ = [1, 2, 4, 7, 12, 14, 17(**low**), 21, 25(**mid**), 29, 31, 37(**high**)]
+
+now we check
+
+`p(A[8], 32) = p(25, 32) = true`
+
+so we assign
+
+`low := mid + 1 = 9`
+
+since
+
+`low < high`
+
+we assign
+
+`mid := floor((9 + 11) / 2) = 10`
+
+_A_ = [1, 2, 4, 7, 12, 14, 17, 21, 25, 29(**low**), 31(**mid**), 37(**high**)]
+
+now we check
+
+`p(A[10], 32) = p(31, 32) = true`
+
+so we assign
+
+`low := mid + 1 = 11`
+
+since 
+
+`low = high`
+
+we finished search algorithm. Now we need to check, weather object we found is the one we're looking for
+
+since
+
+`p(37, 32) = false, p(32, 37) = true`
+
+so
+
+`p(37, 32) or p(32, 37) = true`
+
+then the answer is -1, because element 32 does not appear in array _A_
