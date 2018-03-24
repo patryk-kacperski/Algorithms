@@ -1,1 +1,5 @@
 *.exe 
+*.sh
+*.bat
+*.h.gch
+
