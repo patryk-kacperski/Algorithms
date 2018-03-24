@@ -1,3 +1,6 @@
+#ifndef TEST_H
+#define TEST_H
+
 #include <iostream>
 #include <vector>
 #include <cassert>
@@ -14,3 +17,5 @@ bool test9();
 bool test10();
 bool test11();
 bool test12();
+
+#endif

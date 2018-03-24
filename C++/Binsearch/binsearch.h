@@ -4,20 +4,20 @@
 #include <vector>
 
 template<typename Type, typename IsLesser>
-int binSearch(std::vector<Type> const &S, Type x, IsLesser less) {
-	int n = S.size();
+int binSearch(std::vector<Type> const &A, Type x, IsLesser less) {
+	int n = A.size();
 	int low, high, mid;
 	low = 0;
 	high = n - 1;
 	while(low < high) {
-		mid = (low + high + 1) / 2;
-		if (less(x, S[mid])) {
-			high = mid - 1;
+		mid = (low + high) / 2;
+		if (less(A[mid], x)) {
+			low = mid + 1;
 		} else {
-			low = mid;
+			high = mid;
 		}
 	}
-	return less(S[low], x) || less(x, S[low]) ? -1 : low;
+	return less(A[low], x) || less(x, A[low]) ? -1 : low;
 }
 
 #endif
