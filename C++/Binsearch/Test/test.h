@@ -4,6 +4,8 @@
 #include <iostream>
 #include <vector>
 #include <cassert>
+#include <chrono>
+#include <stdint.h>
 
 class BinSearchTest {
 private:
@@ -32,7 +34,8 @@ public:
 	bool test17();
 	bool test18();
 	bool test19();
-	bool test20();	
+	bool test20();
+	bool test21();	
 	void runTests();
 };
 

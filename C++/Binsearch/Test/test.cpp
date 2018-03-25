@@ -1,6 +1,23 @@
 #include "test.h"
 #include "../binsearch.h"
 
+void prepareSortedVectorOfSize(int n, std::vector<int> &v) {
+	v.resize(n);
+	for (int i = 0; i < n; ++i) {
+		v[i] = i;
+	}
+}
+
+template<typename Type, typename IsEqual>
+int linearSearch(std::vector<Type> const &A, Type x, IsEqual equal) {
+	for (unsigned int i = 0; i < A.size(); ++i) {
+		if (equal(A[i], x)) {
+			return i;
+		}
+	}
+	return -1;
+}
+
 BinSearchTest::BinSearchTest() {
 	ascending = {3, 7, 14, 17, 25, 31, 32, 45, 64, 100, 121, 134, 137, 149, 151, 159};
 	descending = {159, 151, 149, 137, 134, 121, 100, 64, 45, 32, 31, 25, 17, 14, 7, 3};
@@ -189,6 +206,33 @@ bool BinSearchTest::test20() {
 	return expected == actual;
 }
 
+bool BinSearchTest::test21() {
+	std::cout << "Starting test 21: comparing run time of binary search and linear search when looking for last element in array of size 1 048 576.\nTaking average time from 100 invocations\n";
+	std::vector<int> v;
+	prepareSortedVectorOfSize(1048576, v);
+	int const numberOfIterations = 100;
+	int x = 1048575;
+	int64_t binSearchTime = 0;
+	for (int i = 0; i < numberOfIterations; ++i) {
+		auto start = std::chrono::high_resolution_clock::now();
+		binSearch(v, x, [](int a, int b) -> bool { return a < b; });
+		auto end = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+		binSearchTime += duration;
+	}
+	std::cout << "Test 21 result:\n\tBinary search time: " << binSearchTime * 1.0 / numberOfIterations << " nanoseconds";
+	int64_t linearSearchTime = 0;
+	for (int i = 0; i < numberOfIterations; ++i) {
+		auto start = std::chrono::high_resolution_clock::now();
+		linearSearch(v, x, [](int a, int b) -> bool { return a == b; });
+		auto end = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+		linearSearchTime += duration;
+	}
+	std::cout << "\n\tLinear search time: " << linearSearchTime * 1.0 / numberOfIterations << " milliseconds\n";
+	return true;
+}
+
 void BinSearchTest::runTests() {
 	std::cout << "Testing binary search algorithm\n\n";
 	assert(test1());
@@ -231,4 +275,8 @@ void BinSearchTest::runTests() {
 	std::cout << "Test 19 passed\n\n";
 	assert(test20());
 	std::cout << "Test 20 passed\n\n";
+
+	// Efficiency tests
+	test21();
+	std::cout << "\n\n";
 }
