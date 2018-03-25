@@ -5,6 +5,9 @@
 
 template<typename Type, typename IsLesser>
 int binSearch(std::vector<Type> const &A, Type x, IsLesser less) {
+	if (A.empty()) {
+		return -1;
+	}
 	int n = A.size();
 	int low, high, mid;
 	low = 0;

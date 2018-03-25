@@ -115,6 +115,80 @@ bool BinSearchTest::test12() {
 	return expected == actual;
 }
 
+bool BinSearchTest::test13() {
+	std::cout << "Starting test 13: finding first element in array of size 19 sorted in ascending order\n";
+	int x = 3;
+	int expected = 0;
+	int actual = binSearch(nonPow2, x, [](int a, int b) -> bool { return a < b; });
+	std::cout << "Test 13 result:\n\tExpected value: " << expected << "\n\tActual value: " << actual << "\n";
+	return expected == actual;
+}
+
+bool BinSearchTest::test14() {
+	std::cout << "Starting test 14: finding middle element in array of size 19 sorted in ascending order\n";
+	int x = 100;
+	int expected = 9;
+	int actual = binSearch(nonPow2, x, [](int a, int b) -> bool { return a < b; });
+	std::cout << "Test 14 result:\n\tExpected value: " << expected << "\n\tActual value: " << actual << "\n";
+	return expected == actual;
+}
+
+bool BinSearchTest::test15() {
+	std::cout << "Starting test 15: finding last element in array of size 19 sorted in ascending order\n";
+	int x = 189;
+	int expected = 18;
+	int actual = binSearch(nonPow2, x, [](int a, int b) -> bool { return a < b; });
+	std::cout << "Test 15 result:\n\tExpected value: " << expected << "\n\tActual value: " << actual << "\n";
+	return expected == actual;
+}
+
+bool BinSearchTest::test16() {
+	std::cout << "Starting test 16: trying to find element smaller than first in array of size 19 sorted in ascending order\n";
+	int x = 1;
+	int expected = -1;
+	int actual = binSearch(nonPow2, x, [](int a, int b) -> bool { return a < b; });
+	std::cout << "Test 16 result:\n\tExpected value: " << expected << "\n\tActual value: " << actual << "\n";
+	return expected == actual;
+}
+
+bool BinSearchTest::test17() {
+	std::cout << "Starting test 17: trying to find non existing element in the middle of array of size 19 sorted in ascending order\n";
+	int x = 70;
+	int expected = -1;
+	int actual = binSearch(nonPow2, x, [](int a, int b) -> bool { return a < b; });
+	std::cout << "Test 17 result:\n\tExpected value: " << expected << "\n\tActual value: " << actual << "\n";
+	return expected == actual;
+}
+
+bool BinSearchTest::test18() {
+	std::cout << "Starting test 18: trying to find element bigger than last in array of size 19 sorted in ascending order\n";
+	int x = 215;
+	int expected = -1;
+	int actual = binSearch(nonPow2, x, [](int a, int b) -> bool { return a < b; });
+	std::cout << "Test 18 result:\n\tExpected value: " << expected << "\n\tActual value: " << actual << "\n";
+	return expected == actual;
+}
+
+bool BinSearchTest::test19() {
+	std::cout << "Starting test 19: finding element in array of size 1\n";
+	std::vector<int> v = {3};
+	int x = 3;
+	int expected = 0;
+	int actual = binSearch(v, x, [](int a, int b) -> bool { return a < b; });
+	std::cout << "Test 19 result:\n\tExpected value: " << expected << "\n\tActual value: " << actual << "\n";
+	return expected == actual;
+}
+
+bool BinSearchTest::test20() {
+	std::cout << "Starting test 20: trying to find element in empty array\n";
+	std::vector<int> v;
+	int x = 3;
+	int expected = -1;
+	int actual = binSearch(v, x, [](int a, int b) -> bool { return a < b; });
+	std::cout << "Test 20 result:\n\tExpected value: " << expected << "\n\tActual value: " << actual << "\n";
+	return expected == actual;
+}
+
 void BinSearchTest::runTests() {
 	std::cout << "Testing binary search algorithm\n\n";
 	assert(test1());
@@ -141,4 +215,20 @@ void BinSearchTest::runTests() {
 	std::cout << "Test 11 passed\n\n";
 	assert(test12());
 	std::cout << "Test 12 passed\n\n";
+	assert(test13());
+	std::cout << "Test 13 passed\n\n";
+	assert(test14());
+	std::cout << "Test 14 passed\n\n";
+	assert(test15());
+	std::cout << "Test 15 passed\n\n";
+	assert(test16());
+	std::cout << "Test 16 passed\n\n";
+	assert(test17());
+	std::cout << "Test 17 passed\n\n";
+	assert(test18());
+	std::cout << "Test 18 passed\n\n";
+	assert(test19());
+	std::cout << "Test 19 passed\n\n";
+	assert(test20());
+	std::cout << "Test 20 passed\n\n";
 }
