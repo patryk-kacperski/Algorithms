@@ -33,6 +33,10 @@ else:
   return low
 ```
 
+### Complexity
+time: O(log(n))
+space: O(1)
+
 ### Examples
 
 ##### Example 1
