@@ -4,15 +4,12 @@
 #include <vector>
 
 template<typename Type, typename IsLess>
-void merge(std::vector<Type> &S, int low, int mid, int high, IsLess less) {
+void merge(std::vector<Type> &S, int low, int high, IsLess less) {
 	std::vector<Type> temp(high - low + 1);
+	int mid = (low + high) / 2;
 	int i = low, j = mid + 1, k = 0;
 	while (i <= mid && j <= high) {
-		if (less(S[i], S[j])) {
-			temp[k++] = S[i++];
-		} else {
-			temp[k++] = S[j++];
-		}
+		temp[k++] = less(S[i], S[j]) ? S[i++] : S[j++];
 	}
 	if (i > mid) {
 		while (j <= high) {
@@ -35,7 +32,7 @@ void mergesort(std::vector<Type> &S, int low, int high, IsLess less) {
 	int mid = (low + high) / 2;
 	mergesort(S, low, mid, less);
 	mergesort(S, mid + 1, high, less);
-	merge(S, low, mid, high, less);
+	merge(S, low, high, less);
 }
 
 template<typename Type, typename IsLess>

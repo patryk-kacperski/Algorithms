@@ -1,6 +1,6 @@
 #include <iostream>
 #include <vector>
-#include "mergesort.h"
+#include "../mergesort.h"
 
 int main() {
 	int n;
